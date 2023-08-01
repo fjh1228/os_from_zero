@@ -28,18 +28,6 @@ SECTION MBR vstart=0x7c00
 	
 	int 0x10
 
-
-	; 延时函数
-    ; 输入：ax - 循环次数（越大延时越长）
-; 	mov ax, 50
-; delay_loop:
-; 	push cx
-; 	mov cx, ax
-; delay_inner_loop:
-; 	nop
-; 	loop delay_inner_loop
-; 	pop cx
-
 	;输出字符
 	mov byte [gs:0x00], '1'
 	mov byte [gs:0x01], 0xA4
@@ -60,7 +48,7 @@ SECTION MBR vstart=0x7c00
 	;开始进行加载boot
 	mov eax, LOADER_START_SECTOR	;要读的地址
 	mov bx, LODAER_BASE_ADDR		;需要加载到内存的地址0x900
-	mov	cx, 1						;读入的扇区数量
+	mov	cx, 4						;读入的扇区数量
 	call rd_disk_m_16
 
 
