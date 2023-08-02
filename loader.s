@@ -1,6 +1,7 @@
 %include "boot.inc"
 
 LOADER_STACK_TOP equ LODAER_BASE_ADDR
+
 section loader vstart=LODAER_BASE_ADDR
     
     jmp loader_start
@@ -12,7 +13,7 @@ section loader vstart=LODAER_BASE_ADDR
     VIDEO_DESC: dd 0x80000007,DESC_VIDEO_HIGH4          ;LIMIT=(0xbffff-0xb8000) / 4k = 0x7
     
     GDT_SIZE    equ $-GDT_BASE
-    GDT_LIMIT   equ GDT_LIMIT-1
+    GDT_LIMIT   equ GDT_SIZE-1
 
     times 60 dq 0
 
@@ -20,7 +21,8 @@ section loader vstart=LODAER_BASE_ADDR
     SELECTOR_CODE   equ     0x2 << 3 + TI_GDT + PRL_0
     SELECTOR_VIDEO  equ     0x3 << 3 + TI_GDT + PRL_0
 
-    GDT_PTR dw  GDT_LIMIT,GDT_BASE
+    GDT_PTR dw  GDT_LIMIT
+            dd  GDT_BASE
     loadermsg   db  '2 loader in real.'
 
 loader_start:
@@ -41,14 +43,14 @@ loader_start:
     or al, 0x02
     out 0x92, al
 
-    ldgt [GDT_PTR]
+    lgdt [GDT_PTR]
 
     mov eax, cr0                ;cr0是控制寄存器已经是32位，处于保护模式
     or eax, 1
     mov cr0, eax
     
-    jmp dw  SELECTOR_CODE:p_mode_start
-
+    jmp dword  SELECTOR_CODE:p_mode_start
+; 进入保护模式之后，段寄存器的值会被清零
 
 [bits 32]
 p_mode_start:

@@ -21,7 +21,7 @@ DESC_DPL_3      equ     11_0000_0000_0000b
 
 DESC_S_SYS      equ     0_0000_0000_000b    
 DESC_S_CODE     equ     1_0000_0000_000b
-DESC_S_STACK    equ     DESC_S_CODE
+DESC_S_DATA    equ     DESC_S_CODE
 ;x=1,c=0,r=0,a=0 代码段可执行，非一致性，不可读，已访问位清0
 DESC_TYPE_CODE  equ     1000_0000_0000b
 ;x=0,e=0,w=1,a=0 数据段不可执行，向上扩展，可写，已访问位清零
