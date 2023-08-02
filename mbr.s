@@ -48,7 +48,7 @@ SECTION MBR vstart=0x7c00
 	;开始进行加载boot
 	mov eax, LOADER_START_SECTOR	;要读的地址
 	mov bx, LODAER_BASE_ADDR		;需要加载到内存的地址0x900
-	mov	cx, 4						;读入的扇区数量
+	mov	cx, 2						;读入的扇区数量
 	call rd_disk_m_16
 
 

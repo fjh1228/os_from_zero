@@ -62,6 +62,6 @@ p_mode_start:
     mov ax, SELECTOR_VIDEO
     mov gs, ax
 
-    mov byte [gs:160], 'P'
-
+    mov byte [gs:80], 'P'
+    mov byte [gs:81], 0xA4
     jmp $
