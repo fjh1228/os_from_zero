@@ -40,7 +40,7 @@ loader_start:
 ;2 加载gdt
 ;3 将cr0的pe位置1
     in al, 0x92                 ;端口一般是8位
-    or al, 0x02
+    or al, 0x01
     out 0x92, al
 
     lgdt [GDT_PTR]
