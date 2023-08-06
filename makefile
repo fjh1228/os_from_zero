@@ -14,6 +14,8 @@ write2hd :
 openOS :
 	bochs -f bochsrc.disk
 
+install : loader write2hd
+
 clean : 
 	rm -rf *.bin
 
@@ -21,4 +23,4 @@ debug :
 	echo $(COMPLE_PARAM)
 
  
-.PHONY : mbr debug clean loader write2hd openOS
+.PHONY : mbr debug clean loader write2hd openOS install

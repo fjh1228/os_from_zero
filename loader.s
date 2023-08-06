@@ -1,6 +1,6 @@
 %include "boot.inc"
 
-section loader vstart=LODAER_BASE_ADDR
+section loader vstart=LOADER_BASE_ADDR
     
     ;mov gs, cs
 
