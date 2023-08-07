@@ -18,7 +18,7 @@ install : loader write2hd
 
 clean : 
 	rm -rf *.bin
-
+	rm -rf *.out
 debug : 
 	echo $(COMPLE_PARAM)
 
