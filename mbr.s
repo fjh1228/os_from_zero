@@ -28,6 +28,7 @@ SECTION MBR vstart=0x7c00
 	
 	int 0x10
 
+
 	;输出字符
 	mov byte [gs:0x00], '1'
 	mov byte [gs:0x01], 0xA4
@@ -47,82 +48,82 @@ SECTION MBR vstart=0x7c00
 
 	;开始进行加载boot
 	mov eax, LOADER_START_SECTOR	;要读的地址
-	mov bx, LODAER_BASE_ADDR		;需要加载到内存的地址0x900
-	mov	cx, 2						;读入的扇区数量
+	mov bx, LOADER_BASE_ADDR		;需要加载到内存的地址0x900
+	mov	cx, 1						;读入的扇区数量
 	call rd_disk_m_16
 
+	jmp LOADER_BASE_ADDR
 
-	jmp LODAER_BASE_ADDR
 rd_disk_m_16:
-	;保存寄存器的值
-	mov esi, eax
-	mov di, cx
-	;从硬盘读入MBR
-	;读入的顺序
-	;1、设置要读入的扇区数
-	;2、告诉硬盘读入数据的地址，说全就是往该通道的三个LBA寄存器写入起始地址的低24位
-	;3、往device的低4位写入LBA的24-27位，置第六位为1，选择LBA模式，置第四位为0，选择master硬盘
-	;4、往command命令寄存器中写入操作命令（说明你要干啥）
-	;5、读取status寄存器看看你的命令执行完了没有
-	;6、如果是读命令将硬盘数据读出，否则写完收工
-	
-	;步骤1
-	mov dx, 0x1f2
-	mov al, cl
-	out dx, al
-	
-	;恢复eax,eax存的是要读的扇区索引，这里是第二个扇区
-	mov eax, esi
-	;步骤2
-	;7~0位写入LBA地址
-	mov dx, 0x1f3
-	mov al, bl
-	out dx, al
+		;保存寄存器的值
+		mov esi, eax
+		mov di, cx
+		;从硬盘读入MBR
+		;读入的顺序
+		;1、设置要读入的扇区数
+		;2、告诉硬盘读入数据的地址，说全就是往该通道的三个LBA寄存器写入起始地址的低24位
+		;3、往device的低4位写入LBA的24-27位，置第六位为1，选择LBA模式，置第四位为0，选择master硬盘
+		;4、往command命令寄存器中写入操作命令（说明你要干啥）
+		;5、读取status寄存器看看你的命令执行完了没有
+		;6、如果是读命令将硬盘数据读出，否则写完收工
+		
+		;步骤1
+		mov dx, 0x1f2
+		mov al, cl
+		out dx, al
+		
+		;恢复eax,eax存的是要读的扇区索引，这里是第二个扇区
+		mov eax, esi
+		;步骤2
+		;7~0位写入LBA地址
+		mov dx, 0x1f3
+		;mov al, bl	这句代码竟然有问题，操你大爷
+		out dx, al
 
-	mov cl, 8
-	shr eax, cl
-	mov dx, 0x1f4
-	out dx, al
+		mov cl, 8
+		shr eax, cl
+		mov dx, 0x1f4
+		out dx, al
 
-	shr eax, cl
-	mov dx, 0x1f5
-	out dx, al
+		shr eax, cl
+		mov dx, 0x1f5
+		out dx, al
 
-	;步骤3
-	shr eax, cl
-	and al, 0x0f
-	or al, 0xe0
-	mov dx, 0x1f6
-	out dx, al
+		;步骤3
+		shr eax, cl
+		and al, 0x0f
+		or al, 0xe0
+		mov dx, 0x1f6
+		out dx, al
 
-	;步骤4，写入读命令0x20
-	xor eax, eax
-	mov al, 0x20
-	mov dx, 0x1f7
-	out dx, al
+		;步骤4，写入读命令0x20
+		xor eax, eax
+		mov al, 0x20
+		mov dx, 0x1f7
+		out dx, al
 
 	;步骤5，检测硬盘status状态,若第3位为1表示可以输出，第7位为1表示硬盘正忙
-.notready:
-	nop
-	xor eax, eax
-	in al, dx
-	and al, 0x88
-	cmp al, 0x88
-	jnz .notready
+  	.notready:
+		nop
+		xor eax, eax
+		in al, dx
+		and al, 0x88
+		cmp al, 0x08
+		jnz .notready
 
-	;步骤6，读出数据
-	mov ax, di
-	mov dx, 256
-	mul dx
-	mov cx, ax 			;算出要读多少次，读一次2个字节，一共ax个扇区
-	mov dx, 0x1f0
+		;步骤6，读出数据
+		mov ax, di
+		mov dx, 256
+		mul dx
+		mov cx, ax 			;算出要读多少次，读一次2个字节，一共ax个扇区
+		mov dx, 0x1f0
 
-.go_on_read:
-	in ax, dx
-	mov [bx], ax
-	add bx, 2
-	loop .go_on_read
-	ret
+  	.go_on_read:
+		in ax, dx
+		mov [bx], ax
+		add bx, 2
+		loop .go_on_read
+		ret
 
 	times 510-($-$$) db 0
 	db 0x55, 0xaa

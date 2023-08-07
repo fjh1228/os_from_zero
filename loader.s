@@ -1,8 +1,8 @@
 %include "boot.inc"
 
-LOADER_STACK_TOP equ LODAER_BASE_ADDR
+LOADER_STACK_TOP equ LOADER_BASE_ADDR
 
-section loader vstart=LODAER_BASE_ADDR
+section loader vstart=LOADER_BASE_ADDR
     
     jmp loader_start
     ;构建GDT及其内部的描述符
