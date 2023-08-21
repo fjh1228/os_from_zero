@@ -1,3 +1,5 @@
+#设置bochs在运行使用的内存大小
+
 megs : 32
 
 romimage: file=/home/fujinhang/OS/bochs/share/bochs/BIOS-bochs-latest
