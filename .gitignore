@@ -2,3 +2,6 @@
 *.out
 *.disk
 *.img
+kernel/*.bin
+kernel/*.o
+binwalk
