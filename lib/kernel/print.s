@@ -1,7 +1,9 @@
-
 TI_GDT equ 0
 RPL0 equ 0
 SELECTOR_VIDEO equ ( 0x0003 << 3) + TI_GDT + RPL0
+
+section .data
+    put_int_buffer dq 0                 ;定义8字节缓冲区用于数字到字符串的打印
 
 [bits 32]
 section .text
@@ -157,3 +159,70 @@ put_char:
 .put_char_done:
     popad
     ret
+
+; 将小端字节序的数字变成对应的ASCII码后，倒置？
+; 输入：栈中参数为待打印的数字
+; 输出：在屏幕上打印十六进制数字，并不会打印前缀0xb
+; 比如打印十进制15，在屏幕上会显示f
+
+global put_int
+put_int:
+    pushad
+    mov ebp, esp
+    mov eax, [ebp+4*9]                      ;call的返回地址4+4*8，目前eax中存的就是参数
+    mov edx, eax
+    mov edi, 7                              ;指定在put_int_buffer中初始的偏移量,假如给定0x12345678
+    mov ecx, 8                              ;32位，十六进制的数字个数为8
+    mov ebx, put_int_buffer
+
+; 将32位数字按照16进制的形式从低位到高位逐个处理
+; 一共处理8个
+.16based_4bits:
+    and edx, 0x0000000f                     ;解析16进制数字的每一位
+                                            ;and操作后，只有低四位有效
+    cmp edx, 9
+    jg .is_A2F
+    add edx, '0'
+    jmp .store
+.is_A2F:
+    sub edx, 10
+    add edx, 'A'
+
+; 将每一位数字转换成对应的字符后， 按照类似大端的顺序存储到缓冲区put_int_buffer中去
+.store
+    ;此时dl中应该是数字对应的ASCII
+    mov [ebx + edi], dl
+    dec edi
+    shr eax, 4
+    mov edx, eax
+    loop .16based_4bits
+
+
+; 现在put_int_buffer中已经是字符，打印之前把高位连续的0给去掉
+.read_to_print:
+    inc edi                                 ;加1使之变成0
+.skip_prefix_0:
+    cmp edi, 8                              ;如果已经比较了8个字符
+                                            ;表示待打印的字符串全部为0
+    je .full0                               ;全是0的情况
+; 找出全部的0位，edi作为非0的最高位字符的偏移
+.go_on_skip:
+    mov cl, [put_int_buffer+edi]
+    inc edi
+    cmp cl, '0'
+    je .skip_prefix_0                       ;如果是0就判断下一个是不是0
+    dec edi                                 ;如果不是0，那就得把edi的值减去1，edi的值代表了0的个数
+    jmp .put_each_num
+.full0:
+    mov cl, '0'
+.put_each_num:
+    push ecx                                ;此时cx中为可打印的字符
+    call put_char
+    add esp, 4
+    inc edi
+    mov cl, [put_int_buffer+edi]            ;获取下一个字符
+    cmp edi, 8
+    jl .put_each_num
+    popad
+    ret
+
