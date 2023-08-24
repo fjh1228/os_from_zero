@@ -1,7 +1,7 @@
 
 include_path = include/
 ASS_PARAM = -I $(include_path)
-GCC_PARAM = -m32
+GCC_PARAM = -m32 -I lib/kernel/
 LD_PARAM = -m elf_i386 -Ttext 0xc0001500 
 
 %.bin : %.s
@@ -9,13 +9,23 @@ LD_PARAM = -m elf_i386 -Ttext 0xc0001500
 
 loader : mbr.bin loader.bin
 
+# 编译lib/kernel/print.s 生成目标文件
+lib/kernel/%.o	: lib/kernel/%.s
+	nasm -f elf -o $@ $<
+
+# 编译lib/kernel/prinf.s 生成目标文件
 kernel/%.o : kernel/%.c
 	gcc-4.4 -c -o $@ $< $(GCC_PARAM)
 
-kernel/kernel.bin : kernel/main.o
-	ld $< $(LD_PARAM) -e main -o $@ 
+# 链接顺序必须是main在前，print在后，main.c 文件中用到了 print.o 中的 put_char函数，在链接顺序上，
+# 属于“调用在前，实现在后”的顺序。如果将 print.o 放在前面， main.o 放在后面，也就是实现在前，调用
+# 在后，此时生成的可执行文件起始虚拟地址并不准确，会有向后顺延的现象，并且 segment 的数量也不一样。
+# 链接的顺序一定要 先调用，后实现，就是调用的.o文件要在主函数后面
+kernel/kernel.bin : kernel/main.o lib/kernel/print.o
+	ld $^ $(LD_PARAM) -e main -o $@ 
 
-kernel : kernel/kernel.bin
+kernel : lib/kernel/print.o kernel/kernel.bin
+
 
 
 write2hd : 
@@ -31,6 +41,7 @@ install : loader write2hd
 clean : 
 	rm -rf *.bin
 	rm -rf kernel/*.bin kernel/*.o
+	rm -rf lib/kernel/*.o
 
 debug : 
 	echo $(COMPLE_PARAM)

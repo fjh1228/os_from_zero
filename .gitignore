@@ -2,8 +2,7 @@
 *.out
 *.disk
 *.img
-kernel/*.bin
-kernel/*.o
+*.o
 binwalk
 bochs.out
 hd60M.img

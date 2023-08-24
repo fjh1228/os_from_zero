@@ -3,7 +3,7 @@ TI_GDT equ 0
 RPL0 equ 0
 SELECTOR_VIDEO equ ( 0x0003 << 3) + TI_GDT + RPL0
 
-[bit 32]
+[bits 32]
 section .text
 ;--------------put_char------------------
 ;description: 把栈中的一个字符写入光标所在处
@@ -52,18 +52,18 @@ put_char:
     dec bx                              ;bx存放的是光标的位置
     shl bx, 1                           ;光标左移一位表示乘2，表示光标对应显存中的偏移字节,因为一个光标是占用两个字节，即偏移是光标的位置的2倍
 
-    mov byte [gs,bx], 0x20              ;0x20是空格
+    mov byte [gs:bx], 0x20              ;0x20是空格
     inc bx
-    mov byte [gs,bx], 0x07              ;高字节的颜色等信息
+    mov byte [gs:bx], 0x07              ;高字节的颜色等信息
     shr bx, 1                           ;恢复光标的偏移值
     jmp .set_cursor
 
 .put_other:
     shl bx, 1                           ;获取光标的偏移值
 
-    mov [gs,bx], cl                     ;cl中存放的是ASCII码
+    mov [gs:bx], cl                     ;cl中存放的是ASCII码
     inc bx
-    mov [gs,bx], 0x07                   ;字符属性
+    mov byte [gs:bx], 0x07                   ;字符属性
     shr bx, 1
     inc bx
     cmp bx, 2000
@@ -89,3 +89,44 @@ put_char:
 ;如果小于2000，那就给光标值加上80
     jl .set_cursor
 
+;屏幕行范围是0-24，滚屏原理是将1-24行的内容复制得到0-23，从第一行开始复制，然后将24行填充空格
+.roll_screen:
+    cld
+    mov ecx, 960                        ;2000-80=1920个字符,3840个字节
+                                        ;每次搬运4个字节，需要3840/4=960次
+    mov esi, 0xc00b80a0                 ;第一行行首地址，一行80字符*2=160字节，160/16=10=0xa
+    mov edi, 0xc00b8000                 ;第0行行首
+    rep movsd
+
+    ;将最后一行当0进行填充                
+    ;一行160字节*24行/16=0xF0
+    mov ebx, 3840
+    mov ecx, 80
+
+.cls:
+    mov word [gs:ebx], 0x0720           ;0x0720黑底白字的空格键
+    add ebx, 2
+    loop .cls
+    mov bx, 1920                        ;还原光标位置
+
+.set_cursor:
+    ;将光标的值设置为bx的值
+    ;先设置高8位
+    mov dx, 0x03d4
+    mov al, 0x0e
+    out dx, al
+    mov dx, 0x03d5
+    mov al, bh
+    out dx, al
+
+    ;在设置低8位
+    mov dx, 0x03d4
+    mov al, 0x0f
+    out dx, al
+    mov dx, 0x03d5
+    mov al, bl
+    out dx, al
+
+.put_char_done:
+    popad
+    ret
