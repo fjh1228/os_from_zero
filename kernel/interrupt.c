@@ -1,8 +1,33 @@
 #include "interrupt.h"
 #include "stdint.h"
 #include "global.h"
+#include "io.h"
 
 #define IDT_DESC_CNT 0x21
+#define PIC_M_CTRL 0x20      //主片的控制端口是0x20
+#define PIC_M_DATA 0x21      //主片的数据端口是0x21
+#define PIC_S_CTRL 0x20      //从片的控制端口是0x20
+#define PIC_S_DATA 0x21      //从片的数据端口是0x21
+
+/*初始化可编程中断控制器8295A*/
+static void pic_init(void){
+    /*初始化主片*/
+    outb(PIC_M_CTRL, 0X11);        // ICW1:边沿触发，级联8295，需要ICW4
+    outb(PIC_M_DATA, 0X20);        // ICW2:起始中断向量号为0x20
+    outb(PIC_M_CTRL, 0X04);        // ICW3:IR2接从片
+    outb(PIC_M_DATA, 0X01);        // ICW4:8086模式，正常EOI
+
+    /*初始化从片*/
+    outb(PIC_S_CTRL, 0x11);        // ICW1:边沿触发，级联8295，需要ICW4
+    outb(PIC_S_DATA, 0X28);        // ICW2:起始中断向量号为0x28
+    outb(PIC_S_CTRL, 0X02);        // ICW3:设置从片连接到主片的IR2
+    outb(PIC_S_DATA, 0X01);        // ICW4:8086模式，正常EOI
+
+    /*打开主片上的IR0，也就是目前只接受时钟中断*/
+    outb(PIC_M_DATA, 0XFE);
+    outb(PIC_S_DATA, 0XFF);
+    put_str("pic_init done\n");
+}
 
 /*中断门描述符结构体*/
 struct gate_desc
@@ -40,8 +65,8 @@ static void idt_desc_init(void){
 /*完成所有的初始化工作*/
 void idt_init(){
     put_str("idt_init start\n");
-    idt_desc_init();
-    pic_init();
+    idt_desc_init();                //初始化中断描述符表
+    pic_init();                     //初始化8295A
 
     /*加载idt*/
     uint64_t idt_operand = ((sizeof(idt) - 1) | ((uint64_t)(uint32_t)idt << 16));
