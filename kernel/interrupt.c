@@ -68,7 +68,9 @@ void idt_init(){
     idt_desc_init();                //初始化中断描述符表
     pic_init();                     //初始化8295A
 
+    put_str("begin load idt\n");
     /*加载idt*/
     uint64_t idt_operand = ((sizeof(idt) - 1) | ((uint64_t)(uint32_t)idt << 16));
     asm volatile("lidt %0" : : "m" (idt_operand));
+    put_str("idt load over\n");
 }
