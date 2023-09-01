@@ -47,8 +47,10 @@ clean :
 	rm -rf lib/kernel/*.o
 	rm -rf build/*.o
 
+all : clean kernel install
+
 debug : 
 	echo $(COMPLE_PARAM)
 
  
-.PHONY : mbr debug clean loader write2hd openOS install kernel
+.PHONY : mbr debug clean loader write2hd openOS install kernel all

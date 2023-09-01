@@ -189,7 +189,7 @@ put_int:
     add edx, 'A'
 
 ; 将每一位数字转换成对应的字符后， 按照类似大端的顺序存储到缓冲区put_int_buffer中去
-.store
+.store:
     ;此时dl中应该是数字对应的ASCII
     mov [ebx + edi], dl
     dec edi
