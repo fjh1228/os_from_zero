@@ -5,15 +5,15 @@
 extern idt_table
 extern put_str
 section .data
-    intr_str db "intrrupt occur!", 0xa, 0
 global intr_entry_table
 intr_entry_table:
-section .text
+
 %macro VECTOR 2         ;定义名字为vector的宏，参数有两个
+section .text
 intr%1vector:
     %2
     push ds
-    push cs
+    push es
     push fs
     push gs
     pushad              ;因为使用汇编调用C语言，所以必须保存寄存器的环境
@@ -31,17 +31,19 @@ intr%1vector:
 section .data
     dd intr%1vector
 %endmacro
+section .text
 global intr_exit
 intr_exit:
     add esp, 4          ;跳过中断号
     popad
     pop gs
     pop fs
-    pop cs
+    pop es
     pop ds
     add esp, 4          ;跳过error code
-    iret
- 
+    iretd
+
+
 VECTOR 0x00,ZERO                            ;调用之前写好的宏来批量生成中断处理函数，传入参数是中断号码与上面中断宏的%2步骤，这个步骤是什么都不做，还是压入0看p303
 VECTOR 0x01,ZERO
 VECTOR 0x02,ZERO

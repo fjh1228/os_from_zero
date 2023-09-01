@@ -12,10 +12,10 @@
 #define TI_GDT  0
 #define TI_LDT  1
 
-#define SELECOTR_K_CODE  ((1<<3) + (TI_GDT<<2) + RPL0)
-#define SELECOTR_K_DATA  ((2<<3) + (TI_GDT<<2) + RPL0)
-#define SELECOTR_K_STACK SELECOTR_K_DATA
-#define SELECOTR_K_GS  ((3<<3) + (TI_GDT<<2) + RPL0)
+#define SELECTOR_K_CODE  ((1<<3) + (TI_GDT<<2) + RPL0)
+#define SELECTOR_K_DATA  ((2<<3) + (TI_GDT<<2) + RPL0)
+#define SELECTOR_K_STACK SELECOTR_K_DATA
+#define SELECTOR_K_GS  ((3<<3) + (TI_GDT<<2) + RPL0)
 
 /********************************************************定义中断描述门**********************************************************/
 #define IDT_DESC_P 1

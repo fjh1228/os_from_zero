@@ -8,6 +8,7 @@ int main(){
     init_all();
 
     asm volatile ("sti");   //演示中断，在这里临时开中断
+    put_str("program is now!\n");
     while(1);
 
 }
