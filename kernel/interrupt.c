@@ -35,7 +35,7 @@ static void make_idt_desc(struct gate_desc* p_gdesc, uint8_t attribute, intr_han
         p_gdesc->high_16_offset =((uint32_t)(intr_func) & (0xFFFF0000))>>16;
 }
 
-static void idt_desc_init(){
+static void idt_desc_init(void){
     put_str("   idt_desc init start!\n");
     int i;
     for(i = 0; i < IDT_DESC_CNT; i++){
@@ -77,7 +77,7 @@ static void generate_idtr_handler(uint8_t idx){
 
 }
 
-void exception_init(){
+void exception_init(void){
     /*
     为每一个中断赋予一个名字
     */
@@ -139,7 +139,7 @@ static void pic_init(void) {
 
 
 /***************************************中断初始化程序************************************/
-void idt_init(){
+void idt_init(void){
     put_str("idt init start!\n");
     idt_desc_init();
     exception_init();
@@ -156,4 +156,49 @@ void idt_init(){
     put_str("idt init done!\n");
     
 
+}
+
+/**************************************开关中断、获取中断状态以及设置中断********************/
+#define EFLAGS_IF 0X00000200
+#define GET_EFLAGS(EFLAGS_VAR) asm volatile("pushfl; popl %0": "=g"(EFLAGS_VAR))
+//开中断，并返回中断前的状态
+enum intr_status intr_enable(){
+     enum intr_status old_status;
+     if(INTR_ON == get_intr_status()){
+        old_status = INTR_ON;
+        return old_status;
+     }
+     else{
+        asm("sti");
+        old_status = INTR_OFF;
+        return old_status;
+     }
+}
+
+//关中断，并返回中断前的状态
+enum intr_status intr_disable(){
+     enum intr_status old_status;
+     if(INTR_ON != get_intr_status()){
+        old_status = INTR_OFF;
+        return old_status;
+     }
+     else{
+        asm("cli");
+        old_status = INTR_ON;
+        return old_status;
+     }
+}
+
+//获取当前的中断状态
+enum intr_status get_intr_status(){
+    uint32_t eflags;
+    GET_EFLAGS(eflags);
+    return  (eflags & EFLAGS_IF) ? intr_enable() :  intr_disable();
+}
+
+//设置当前的中断,并返回中断前状态
+enum intr_status set_intr_status(enum intr_status status){
+    enum intr_status old_status = get_intr_status();
+    status == INTR_ON ? intr_enable() : intr_disable();
+    return old_status;
 }
