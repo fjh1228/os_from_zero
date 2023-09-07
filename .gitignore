@@ -4,7 +4,7 @@
 *.img
 *.o
 binwalk
-bochs.out
-bochssrc.disk
+*.bak
 hd60M.img
+
 build/
