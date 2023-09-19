@@ -51,7 +51,7 @@ gdb_symbol :
 	objcopy --only-keep-debug $(BUILD_DIR)/kernel.bin $(BUILD_DIR)/kernel.sym
 
 openOS :  
-	bochs -q -f $(BOCHS_PATH)bochsrc.disk 
+	bochs -q -f $(BOCHS_PATH)/bochsrc.disk 
 # bochs -q -f ./bochsrc.disk 
 
 install : loader write2hd
