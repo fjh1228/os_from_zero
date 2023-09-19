@@ -24,6 +24,7 @@ static void make_idt_desc(struct gate_desc* p_gdesc, uint8_t attribute, intr_han
 extern intr_handler intr_entry_table[IDT_DESC_CNT];
 static struct gate_desc idt[IDT_DESC_CNT];          //中断门描述符（结构体），不是中断描述符表，一个中断门可以在中断描述符表中存在很多的
 intr_handler idt_table[IDT_DESC_CNT];
+void exception_init(void);
 char* intr_name[IDT_DESC_CNT];
 
 /***************************************补全中断描述符表************************************/
@@ -137,7 +138,7 @@ static void pic_init(void) {
    put_str("   pic_init done!\n");
 }
 
-
+void idt_init(void);
 /***************************************中断初始化程序************************************/
 void idt_init(void){
     put_str("idt init start!\n");

@@ -8,7 +8,7 @@ LD_PARAM = -m elf_i386 -Ttext $(ENTRY_POINT) -e main
 OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/print.o $(BUILD_DIR)/init.o \
 	$(BUILD_DIR)/interrupt.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/debug.o
 # HD60M_PATH = /home/fujinhang/OS/bochs-gdb/hd60M.img
-HD60M_PATH = ./hd60M.img
+HD60M_PATH = /home/fujinhang/OS/bochs-gdb/hd60M.img
 
 %.bin : %.s
 	nasm $(ASS_PARAM) -I $(include_path) -o $@ $<
@@ -42,26 +42,26 @@ $(BUILD_DIR)/kernel.bin : $(OBJS)
 kernel : $(BUILD_DIR)/kernel.bin
 
 write2hd : 
-	dd if=./mbr.bin of=$(HD60M_PATH) bs=512 count=1 conv=notrunc
-	dd if=./loader.bin of=$(HD60M_PATH) bs=512 count=4 seek=2 conv=notrunc
-	dd if=./$(BUILD_DIR)/kernel.bin of=$(HD60M_PATH) bs=512 count=200 seek=9 conv=notrunc
+	dd if=./mbr.bin of=$(HD60M_PATH) bs=512 count=1 conv=notrunc \
+	&& dd if=./loader.bin of=$(HD60M_PATH) bs=512 count=4 seek=2 conv=notrunc \
+	&& dd if=$(BUILD_DIR)/kernel.bin of=$(HD60M_PATH) bs=512 count=200 seek=9 conv=notrunc
 
 gdb_symbol :
 	objcopy --only-keep-debug $(BUILD_DIR)/kernel.bin $(BUILD_DIR)/kernel.sym
 
 openOS :  
-# bochs -q -f ../bochs-gdb/bochsrc.disk 
-	bochs -q -f ./bochsrc.disk 
+	bochs -q -f ../bochs-gdb/bochsrc.disk 
+# bochs -q -f ./bochsrc.disk 
 
 install : loader write2hd
 
 clean : 
-	find ../os_from_zero -type f \( -name "*.bin" -o -name "*.o" -o -name "*.sym" \) -exec rm {} \;
+	find ../os_from_zero -type f \( -name "*.bin" -o -name "*.o" -o -name "*.sym" -o -name "*.map" \) -exec rm {} \;
 
-all : clean kernel install gdb_symbol
+all : clean loader kernel install gdb_symbol
 
 
 debug:
 	gdb -ex "target remote localhost:1234" -ex "symbol-file /home/fujinhang/OS/os_from_zero/build/kernel.sym"
  
-.PHONY : mbr debug clean loader write2hd openOS install kernel all gdb_symbol
+.PHONY : debug clean loader write2hd openOS install kernel all gdb_symbol
