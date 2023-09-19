@@ -8,7 +8,8 @@ LD_PARAM = -m elf_i386 -Ttext $(ENTRY_POINT) -e main
 OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/print.o $(BUILD_DIR)/init.o \
 	$(BUILD_DIR)/interrupt.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/debug.o
 # HD60M_PATH = /home/fujinhang/OS/bochs-gdb/hd60M.img
-HD60M_PATH = /home/fujinhang/OS/bochs-gdb/hd60M.img
+HD60M_PATH = /home/fujinhang/OS/bochs-gdb
+BOCHS_PATH = /home/fujinhang/OS/bochs-gdb
 
 %.bin : %.s
 	nasm $(ASS_PARAM) -I $(include_path) -o $@ $<
@@ -42,15 +43,15 @@ $(BUILD_DIR)/kernel.bin : $(OBJS)
 kernel : $(BUILD_DIR)/kernel.bin
 
 write2hd : 
-	dd if=./mbr.bin of=$(HD60M_PATH) bs=512 count=1 conv=notrunc \
-	&& dd if=./loader.bin of=$(HD60M_PATH) bs=512 count=4 seek=2 conv=notrunc \
-	&& dd if=$(BUILD_DIR)/kernel.bin of=$(HD60M_PATH) bs=512 count=200 seek=9 conv=notrunc
+	dd if=./mbr.bin of=$(HD60M_PATH)/hd60M.img bs=512 count=1 conv=notrunc \
+	&& dd if=./loader.bin of=$(HD60M_PATH)/hd60M.img bs=512 count=4 seek=2 conv=notrunc \
+	&& dd if=$(BUILD_DIR)/kernel.bin of=$(HD60M_PATH)/hd60M.img bs=512 count=200 seek=9 conv=notrunc
 
 gdb_symbol :
 	objcopy --only-keep-debug $(BUILD_DIR)/kernel.bin $(BUILD_DIR)/kernel.sym
 
 openOS :  
-	bochs -q -f ../bochs-gdb/bochsrc.disk 
+	bochs -q -f $(BOCHS_PATH)bochsrc.disk 
 # bochs -q -f ./bochsrc.disk 
 
 install : loader write2hd
