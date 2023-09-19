@@ -1,4 +1,9 @@
 *.bin
 *.out
-*.img
 *.disk
+*.img
+*.o
+binwalk
+*.bak
+hd60M.img
+build/
