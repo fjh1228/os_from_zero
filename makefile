@@ -1,6 +1,6 @@
 BUILD_DIR = ./build
 include_path = include/
-ASS_PARAM = -f elf -g
+ASS_PARAM =-f elf
 ENTRY_POINT = 0xc0001500
 LIB = -I lib/kernel/ -I lib/ -I kernel/
 GCC_PARAM = -m32 $(LIB) -c -fno-builtin -Wall -W -Wstrict-prototypes -Wmissing-prototypes -g
@@ -12,7 +12,7 @@ HD60M_PATH = /home/fujinhang/OS/bochs-gdb
 BOCHS_PATH = /home/fujinhang/OS/bochs-gdb
 
 %.bin : %.s
-	nasm $(ASS_PARAM) -I $(include_path) -o $@ $<
+	nasm -I $(include_path) -o $@ $<
 
 loader : mbr.bin loader.bin
 

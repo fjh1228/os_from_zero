@@ -138,7 +138,7 @@ static void pic_init(void) {
    put_str("   pic_init done!\n");
 }
 
-void idt_init(void);
+
 /***************************************中断初始化程序************************************/
 void idt_init(void){
     put_str("idt init start!\n");
