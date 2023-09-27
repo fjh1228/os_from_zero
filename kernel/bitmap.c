@@ -9,13 +9,13 @@ void init_bitmap(struct bitmap* bitmap)
     /*
     这里有memset函数，可对指定地址的字节长度进行初始化
     uint32_t i;
-    for(i = 0; i < bitmap->bitmap_length / 8 ; i++)
+    for(i = 0; i < bitmap->bitmap_byte_length / 8 ; i++)
     {
         bitmap->bits = 0;  
         bitmap++;
     }
     */
-   memset(bitmap->bits, 0, bitmap->bitmap_length);
+   memset(bitmap->bits, 0, bitmap->bitmap_byte_length);
     
 }
 
@@ -23,7 +23,7 @@ void init_bitmap(struct bitmap* bitmap)
 void set_bitmap(struct bitmap* bitmap, uint32_t idx, int value)
 {
     ASSERT(bitmap != NULL || value == 1 || value == 0);
-    ASSERT(bitmap->bitmap_length < idx);
+    ASSERT((bitmap->bitmap_byte_length * 8 - 1)  >= idx);
     uint32_t byte_idx = idx / 8;
     uint8_t bit_idx = idx % 8;
     uint8_t target_byte = bitmap->bits[byte_idx];
@@ -43,7 +43,7 @@ void set_bitmap(struct bitmap* bitmap, uint32_t idx, int value)
 bool test_bitmap(struct bitmap* bitmap, uint32_t idx)
 {
     ASSERT(bitmap != NULL);
-    ASSERT(bitmap->bitmap_length > idx);
+    ASSERT((bitmap->bitmap_byte_length * 8 - 1)  >= idx);
     uint32_t byte_idx = idx / 8;
     uint8_t bit_idx = idx % 8;
     return bitmap->bits[byte_idx] & (BIT_MASK << bit_idx);
@@ -54,7 +54,7 @@ int bitmap_scan(struct bitmap* bitmap, uint32_t cnt)
 {
     ASSERT(bitmap != NULL);
     uint32_t byte_idx = 0;
-    while(byte_idx < bitmap->bitmap_length)
+    while(byte_idx < bitmap->bitmap_byte_length)
     {
         if(bitmap->bits[byte_idx] == 0xff)          //说明这一个字节已经被全部分配了
         {
@@ -62,7 +62,7 @@ int bitmap_scan(struct bitmap* bitmap, uint32_t cnt)
         }
 
     }
-    if(byte_idx == bitmap->bitmap_length)
+    if(byte_idx == bitmap->bitmap_byte_length)
         return -1;                                  //已经满了
     
     uint8_t bit_idx = 0;
@@ -81,7 +81,7 @@ int bitmap_scan(struct bitmap* bitmap, uint32_t cnt)
         return bit_idx_start;
     }
     //记录还有多少位需要判断。
-    uint32_t bit_left = (bitmap->bitmap_length * 8) - bit_idx_start;
+    uint32_t bit_left = (bitmap->bitmap_byte_length * 8) - bit_idx_start;
     uint32_t next_bit = bit_idx_start + 1;
     uint32_t count = 1;                             //用于记录找到的空闲位的个数
 
